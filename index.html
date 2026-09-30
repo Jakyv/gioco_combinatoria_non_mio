@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IL CODICE SEGRETO ⚡ Sfida di Combinatoria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0b0d14;
+            color: #f3f4f6;
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(236, 72, 153, 0.1) 0%, transparent 25%),
+                radial-gradient(circle at 85% 80%, rgba(6, 182, 212, 0.1) 0%, transparent 25%),
+                radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.08) 0%, transparent 50%);
+        }
+
+        .arcade-font {
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        .glow-cyan {
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4), inset 0 0 10px rgba(6, 182, 212, 0.2);
+        }
+        .glow-magenta {
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.4), inset 0 0 10px rgba(236, 72, 153, 0.2);
+        }
+        .glow-yellow {
+            box-shadow: 0 0 18px rgba(234, 179, 8, 0.5), inset 0 0 10px rgba(234, 179, 8, 0.25);
+        }
+        .glow-green {
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.4), inset 0 0 10px rgba(34, 197, 94, 0.2);
+        }
+
+        .text-glow-cyan { text-shadow: 0 0 8px rgba(6, 182, 212, 0.8); }
+        .text-glow-magenta { text-shadow: 0 0 8px rgba(236, 72, 153, 0.8); }
+        .text-glow-yellow { text-shadow: 0 0 10px rgba(234, 179, 8, 0.9); }
+
+        .btn-arcade {
+            transition: all 0.1s ease;
+            transform: translateY(0);
+        }
+        .btn-arcade:active:not(:disabled) {
+            transform: translateY(4px);
+            box-shadow: none !important;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #111827; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        .animate-shake { animation: shake 0.4s ease-in-out; }
+
+        @keyframes pulse-glow {
+            0%, 100% { filter: brightness(1); transform: scale(1); }
+            50% { filter: brightness(1.25); transform: scale(1.02); }
+        }
+        .animate-pulse-glow { animation: pulse-glow 1.5s infinite; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-2 md:p-4 selection:bg-pink-500 selection:text-white">
+
+    <header class="max-w-7xl mx-auto w-full mb-3">
+        <div class="bg-gray-900/85 backdrop-blur border-2 border-cyan-500/40 rounded-2xl p-3 md:p-4 flex flex-wrap items-center justify-between gap-3 shadow-2xl">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-tr from-cyan-500 via-purple-500 to-pink-500 flex items-center justify-center text-xl md:text-2xl font-black shadow-lg glow-cyan">
+                    🔐
+                </div>
+                <div>
+                    <h1 class="arcade-font text-xs sm:text-sm md:text-base text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-pink-400 to-yellow-300">
+                        IL CODICE SEGRETO
+                    </h1>
+                    <p class="text-xs text-gray-400 font-semibold tracking-wide flex items-center gap-2">
+                        <span>Sfida di Combinatoria - Scuola Primaria</span>
+                        <span id="secretBadgeHeader" class="hidden px-2 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-400/50 text-yellow-300 text-[10px] font-bold">
+                            🎯 Codice Obbiettivo Attivo
+                        </span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Header Controls -->
+            <div class="flex items-center gap-2">
+                <button id="soundToggleBtn" onclick="toggleAudio()" class="p-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-xl text-yellow-400 text-lg transition flex items-center justify-center">
+                    🔊
+                </button>
+                
+                <button onclick="toggleTeacherPanel()" class="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs md:text-sm rounded-xl border border-purple-400/30 flex items-center gap-2 shadow-lg transition">
+                    <span>⚙️ Impostazioni Docente</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="teacherPanel" class="hidden mt-3 bg-gray-900/95 border-2 border-purple-500/60 rounded-2xl p-4 md:p-6 shadow-2xl transition-all">
+            <div class="flex justify-between items-center border-b border-gray-800 pb-3 mb-4">
+                <h2 class="arcade-font text-xs md:text-sm text-purple-300 flex items-center gap-2">
+                    🛠️ PANNELLO DI CONFIGURAZIONE DOCENTE
+                </h2>
+                <button onclick="toggleTeacherPanel()" class="text-gray-400 hover:text-white text-xl font-bold px-2">✕</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                <!-- 1. Game Mode -->
+                <div class="bg-gray-800/60 p-3.5 rounded-xl border border-gray-700">
+                    <label class="block text-xs font-bold text-cyan-400 mb-2 uppercase tracking-wider">
+                        1. Modalità Gioco
+                    </label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="mode1P" onclick="setGameMode('1P')" class="py-2 px-3 rounded-lg text-xs font-bold border transition bg-cyan-600 text-white border-cyan-400">
+                            👤 1 Giocatore
+                        </button>
+                        <button id="mode2P" onclick="setGameMode('2P')" class="py-2 px-3 rounded-lg text-xs font-bold border transition bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600">
+                            ⚔️ Sfida 2 Players
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. Element Type -->
+                <div class="bg-gray-800/60 p-3.5 rounded-xl border border-gray-700">
+                    <label class="block text-xs font-bold text-pink-400 mb-2 uppercase tracking-wider">
+                        2. Tipo Elementi
+                    </label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="typeNumbers" onclick="setElementType('numbers')" class="py-2 px-3 rounded-lg text-xs font-bold border transition bg-pink-600 text-white border-pink-400">
+                            1️⃣2️⃣ Cifre
+                        </button>
+                        <button id="typeEmoji" onclick="setElementType('emoji')" class="py-2 px-3 rounded-lg text-xs font-bold border transition bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600">
+                            🚀🎨 Emoji
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Element Count -->
+                <div class="bg-gray-800/60 p-3.5 rounded-xl border border-gray-700">
+                    <label class="block text-xs font-bold text-yellow-400 mb-2 uppercase tracking-wider">
+                        3. Numero Elementi
+                    </label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button id="count2" onclick="setElementCount(2)" class="py-2 rounded-lg text-xs font-bold border transition bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600">
+                            2 (2 comb.)
+                        </button>
+                        <button id="count3" onclick="setElementCount(3)" class="py-2 rounded-lg text-xs font-bold border transition bg-yellow-600 text-white border-yellow-400">
+                            3 (6 comb.)
+                        </button>
+                        <button id="count4" onclick="setElementCount(4)" class="py-2 rounded-lg text-xs font-bold border transition bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600">
+                            4 (24 comb.)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4. Symbol Selection -->
+                <div class="bg-gray-800/60 p-3.5 rounded-xl border border-gray-700">
+                    <label class="block text-xs font-bold text-green-400 mb-2 uppercase tracking-wider">
+                        4. Set Simboli da Permutare
+                    </label>
+                    <div id="symbolsSelector" class="flex flex-wrap gap-1.5 justify-center">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5 p-4 bg-gray-800/80 rounded-xl border-2 border-yellow-500/50">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-3">
+                    <div>
+                        <span class="text-xs font-bold text-yellow-400 uppercase tracking-widest flex items-center gap-2">
+                            🎯 CODICE SEGRETO VINCENTE (OPZIONALE)
+                        </span>
+                        <p class="text-xs text-gray-300">
+                            Imposta un codice specifico: il primo giocatore che lo compone vince all'istante la partita!
+                        </p>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <button onclick="toggleSecretCodeMode()" id="secretModeToggleBtn" class="px-3 py-1.5 rounded-lg text-xs font-bold border transition bg-gray-700 text-gray-300 border-gray-600">
+                            Disattivato
+                        </button>
+                        <button onclick="generateRandomSecretCode()" id="randomSecretBtn" class="px-3 py-1.5 bg-yellow-600/80 hover:bg-yellow-500 text-white rounded-lg text-xs font-bold border border-yellow-400 transition hidden">
+                            🎲 Casuale
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Selector for Teacher's Secret Code -->
+                <div id="secretCodePicker" class="hidden pt-3 border-t border-gray-700/80">
+                    <div class="text-xs text-gray-400 mb-2 font-semibold">Scegli il codice segreto dalle permutazioni valide:</div>
+                    <div id="secretPermutationsList" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 bg-gray-950 rounded-lg border border-gray-800">
+                        <!-- List populated dynamically -->
+                    </div>
+                    <div class="mt-2 text-xs font-bold text-yellow-300 flex items-center gap-2">
+                        <span>Codice Segreto impostato:</span>
+                        <span id="currentSecretDisplay" class="bg-yellow-500/20 px-3 py-1 rounded-lg border border-yellow-400 font-mono text-sm text-yellow-200">Nessuno</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-gray-800 flex justify-end">
+                <button onclick="resetGame()" class="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-extrabold text-xs rounded-xl shadow-lg glow-green transition">
+                    🔄 APPLICA E RICOMINCIA
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto w-full flex-grow flex flex-col justify-center">
+        <!-- Target Code Banner if Active -->
+        <div id="targetCodeBanner" class="hidden mb-3 bg-gradient-to-r from-yellow-950/80 via-amber-900/60 to-yellow-950/80 border-2 border-yellow-500/70 rounded-2xl p-2.5 text-center shadow-lg glow-yellow">
+            <div class="flex items-center justify-center gap-2 text-xs md:text-sm font-extrabold text-yellow-300">
+                <span>🎯 OBIETTIVO SPECIALE:</span>
+                <span class="text-gray-200 font-normal">Trova il Codice Segreto o completa tutte le permutazioni per vincere!</span>
+            </div>
+        </div>
+
+        <!-- PLAYER ARENA GRID -->
+        <div id="arenaGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 my-auto">
+            
+            <!-- PLAYER 1 CONTAINER -->
+            <div id="p1Container" class="bg-gray-900/90 border-2 border-cyan-500/50 rounded-2xl p-3 md:p-5 flex flex-col justify-between shadow-2xl relative overflow-hidden transition-all">
+                <div class="flex items-center justify-between bg-gray-800/90 px-3 py-2 rounded-xl border border-cyan-500/30 mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-cyan-400 animate-pulse"></span>
+                        <h2 class="arcade-font text-xs sm:text-sm text-cyan-300 uppercase tracking-wider" id="p1Title">
+                            GIOCATORE 1
+                        </h2>
+                    </div>
+                    <div class="text-xs font-bold text-cyan-400 bg-cyan-950/80 px-2.5 py-1 rounded-lg border border-cyan-800">
+                        Trovate: <span id="p1Count" class="text-white text-sm">0</span>/<span id="p1Total" class="text-cyan-300">6</span>
+                    </div>
+                </div>
+
+                <div class="mb-3 bg-gray-950/90 rounded-xl p-3 border border-gray-800 text-center flex flex-col items-center justify-center min-h-[70px]">
+                    <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Combinazione Corrente</div>
+                    <div id="p1SlotContainer" class="flex gap-2 justify-center min-h-[36px] items-center"></div>
+                </div>
+
+                <div class="mb-4">
+                    <div id="p1Keypad" class="flex flex-wrap gap-2 justify-center mb-3"></div>
+                    <div class="flex gap-2">
+                        <button onclick="clearCurrentInput(1)" class="flex-1 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-xs rounded-xl border border-gray-600 transition">
+                            ⌫ CANCELLA
+                        </button>
+                        <button onclick="submitCombination(1)" class="flex-2 py-2.5 px-6 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-sm rounded-xl border border-cyan-300/40 glow-cyan transition btn-arcade">
+                            ⚡ INVIA
+                        </button>
+                    </div>
+                    <div id="p1Message" class="mt-2 text-center text-xs font-bold h-5 text-gray-400 transition-all"></div>
+                </div>
+
+                <div class="bg-gray-950/60 rounded-xl p-3 border border-gray-800/80">
+                    <div class="text-[10px] uppercase font-bold text-gray-400 mb-2 flex justify-between items-center">
+                        <span>Tabellone Combinazioni</span>
+                        <span class="text-cyan-400/70 font-mono text-[9px]">Senza ripetizioni</span>
+                    </div>
+                    <div id="p1Grid" class="grid gap-2 max-h-[280px] overflow-y-auto pr-1"></div>
+                </div>
+            </div>
+
+            <!-- PLAYER 2 CONTAINER -->
+            <div id="p2Container" class="bg-gray-900/90 border-2 border-pink-500/50 rounded-2xl p-3 md:p-5 flex flex-col justify-between shadow-2xl relative overflow-hidden transition-all">
+                <div class="flex items-center justify-between bg-gray-800/90 px-3 py-2 rounded-xl border border-pink-500/30 mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-pink-400 animate-pulse"></span>
+                        <h2 class="arcade-font text-xs sm:text-sm text-pink-300 uppercase tracking-wider">
+                            GIOCATORE 2
+                        </h2>
+                    </div>
+                    <div class="text-xs font-bold text-pink-400 bg-pink-950/80 px-2.5 py-1 rounded-lg border border-pink-800">
+                        Trovate: <span id="p2Count" class="text-white text-sm">0</span>/<span id="p2Total" class="text-pink-300">6</span>
+                    </div>
+                </div>
+
+                <div class="mb-3 bg-gray-950/90 rounded-xl p-3 border border-gray-800 text-center flex flex-col items-center justify-center min-h-[70px]">
+                    <div class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Combinazione Corrente</div>
+                    <div id="p2SlotContainer" class="flex gap-2 justify-center min-h-[36px] items-center"></div>
+                </div>
+
+                <div class="mb-4">
+                    <div id="p2Keypad" class="flex flex-wrap gap-2 justify-center mb-3"></div>
+                    <div class="flex gap-2">
+                        <button onclick="clearCurrentInput(2)" class="flex-1 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-xs rounded-xl border border-gray-600 transition">
+                            ⌫ CANCELLA
+                        </button>
+                        <button onclick="submitCombination(2)" class="flex-2 py-2.5 px-6 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-400 hover:to-rose-500 text-white font-extrabold text-sm rounded-xl border border-pink-300/40 glow-magenta transition btn-arcade">
+                            ⚡ INVIA
+                        </button>
+                    </div>
+                    <div id="p2Message" class="mt-2 text-center text-xs font-bold h-5 text-gray-400 transition-all"></div>
+                </div>
+
+                <div class="bg-gray-950/60 rounded-xl p-3 border border-gray-800/80">
+                    <div class="text-[10px] uppercase font-bold text-gray-400 mb-2 flex justify-between items-center">
+                        <span>Tabellone Combinazioni</span>
+                        <span class="text-pink-400/70 font-mono text-[9px]">Senza ripetizioni</span>
+                    </div>
+                    <div id="p2Grid" class="grid gap-2 max-h-[280px] overflow-y-auto pr-1"></div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="max-w-7xl mx-auto w-full mt-4 mb-2">
+        <div class="bg-gray-900/80 border border-gray-800 rounded-2xl overflow-hidden shadow-xl">
+            <button onclick="toggleAccordion()" class="w-full p-3.5 bg-gray-800/60 hover:bg-gray-800 text-left flex justify-between items-center transition">
+                <span class="font-bold text-xs md:text-sm text-yellow-400 flex items-center gap-2">
+                    💡 SCOPRI LA REGOLA MATEMATICA (Il Fattoriale!)
+                </span>
+                <span id="accordionArrow" class="text-yellow-400 text-xs transition-transform duration-300">▼</span>
+            </button>
+            <div id="accordionContent" class="hidden p-4 bg-gray-950/80 text-xs text-gray-300 border-t border-gray-800 leading-relaxed">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-gray-900 p-3 rounded-xl border border-gray-800">
+                        <span class="text-cyan-400 font-bold block mb-1">Che cos'è una Permutazione?</span>
+                        È un modo di ordinare un insieme di elementi distinti. L'ordine in cui li metti è fondamentale!
+                    </div>
+                    <div class="bg-gray-900 p-3 rounded-xl border border-gray-800">
+                        <span class="text-pink-400 font-bold block mb-1">La Formula del Fattoriale (n!)</span>
+                        Per scoprire quante combinazioni esistono, si moltiplicano tutti i numeri interi fino a <span class="font-mono text-yellow-300">n</span>:
+                        <ul class="list-disc list-inside mt-1 font-mono text-[11px] text-gray-400">
+                            <li>2 elementi = 2 × 1 = <strong class="text-white">2</strong></li>
+                            <li>3 elementi = 3 × 2 × 1 = <strong class="text-white">6</strong></li>
+                            <li>4 elementi = 4 × 3 × 2 × 1 = <strong class="text-white">24</strong></li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-900 p-3 rounded-xl border border-gray-800">
+                        <span class="text-green-400 font-bold block mb-1">Strategia di Calcolo</span>
+                        Per la prima posizione hai <strong class="text-white">n</strong> scelte, per la seconda <strong class="text-white">n-1</strong>, per la terza <strong class="text-white">n-2</strong> e così via!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <div id="winModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 z-50">
+        <div class="bg-gray-900 border-4 border-yellow-400 rounded-3xl p-6 md:p-8 max-w-md w-full text-center shadow-2xl glow-yellow animate-pulse-glow relative">
+            <div id="winIcon" class="text-5xl md:text-6xl mb-3">🏆</div>
+            <h2 id="winTitle" class="arcade-font text-lg md:text-xl text-yellow-300 mb-2">
+                VITTORIA!
+            </h2>
+            <p id="winDescription" class="text-sm md:text-base font-semibold text-gray-200 mb-6">
+                Hai completato tutte le permutazioni in modo perfetto!
+            </p>
+            <button onclick="closeWinModal(); resetGame();" class="w-full py-3 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-gray-950 font-black text-sm rounded-xl shadow-lg transition btn-arcade uppercase tracking-wider">
+                🎮 Nuova Partita
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- STATE ---
+        const state = {
+            gameMode: '2P',          
+            elementType: 'numbers',  
+            elementCount: 3,         
+            availableSymbols: [],    
+            
+            // Secret target combination feature
+            secretCodeActive: false,
+            secretCode: null, // Array of symbols e.g. ['1', '3', '2']
+            
+            p1: { currentInput: [], foundCombinations: [], totalCombinations: 6 },
+            p2: { currentInput: [], foundCombinations: [], totalCombinations: 6 },
+
+            soundEnabled: true
+        };
+
+        const PRESETS = {
+            numbers: ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
+            emoji: ['🚀', '🎨', '⚽', '🍕', '🐱', '⭐', '🎸', '🎮', '🦄']
+        };
+
+        // --- AUDIO ENGINE ---
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (!state.soundEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'success') {
+                const freqs = [523.25, 659.25, 783.99, 1046.50];
+                freqs.forEach((freq, idx) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.connect(g);
+                    g.connect(audioCtx.destination);
+                    o.type = 'triangle';
+                    o.frequency.setValueAtTime(freq, now + idx * 0.06);
+                    g.gain.setValueAtTime(0.2, now + idx * 0.06);
+                    g.gain.linearRampToValueAtTime(0.01, now + idx * 0.06 + 0.12);
+                    o.start(now + idx * 0.06);
+                    o.stop(now + idx * 0.06 + 0.12);
+                });
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.linearRampToValueAtTime(110, now + 0.2);
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'win') {
+                const winNotes = [440, 554.37, 659.25, 880, 1108.73];
+                winNotes.forEach((f, i) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.connect(g);
+                    g.connect(audioCtx.destination);
+                    o.type = 'square';
+                    o.frequency.setValueAtTime(f, now + i * 0.1);
+                    g.gain.setValueAtTime(0.18, now + i * 0.1);
+                    g.gain.linearRampToValueAtTime(0.01, now + i * 0.1 + 0.3);
+                    o.start(now + i * 0.1);
+                    o.stop(now + i * 0.1 + 0.3);
+                });
+            }
+        }
+
+        function toggleAudio() {
+            state.soundEnabled = !state.soundEnabled;
+            document.getElementById('soundToggleBtn').innerText = state.soundEnabled ? '🔊' : '🔇';
+            document.getElementById('soundToggleBtn').classList.toggle('opacity-50', !state.soundEnabled);
+        }
+
+        // --- MATHEMATICAL PERMUTATIONS GENERATOR ---
+        function factorial(n) {
+            return n <= 1 ? 1 : n * factorial(n - 1);
+        }
+
+        function generateAllPermutations(arr) {
+            const res = [];
+            function permute(curr, remaining) {
+                if (remaining.length === 0) {
+                    res.push(curr);
+                    return;
+                }
+                for (let i = 0; i < remaining.length; i++) {
+                    permute([...curr, remaining[i]], [...remaining.slice(0, i), ...remaining.slice(i + 1)]);
+                }
+            }
+            permute([], arr);
+            return res;
+        }
+
+        // --- SECRET CODE FEATURE LOGIC ---
+        function toggleSecretCodeMode() {
+            state.secretCodeActive = !state.secretCodeActive;
+            const btn = document.getElementById('secretModeToggleBtn');
+            const randomBtn = document.getElementById('randomSecretBtn');
+            const picker = document.getElementById('secretCodePicker');
+            const badge = document.getElementById('secretBadgeHeader');
+
+            if (state.secretCodeActive) {
+                btn.className = "px-3 py-1.5 rounded-lg text-xs font-bold border transition bg-yellow-600 text-white border-yellow-400";
+                btn.innerText = "Attivo 🎯";
+                randomBtn.classList.remove('hidden');
+                picker.classList.remove('hidden');
+                badge.classList.remove('hidden');
+                
+                // If no secret code set, auto generate one
+                if (!state.secretCode) {
+                    generateRandomSecretCode();
+                }
+            } else {
+                btn.className = "px-3 py-1.5 rounded-lg text-xs font-bold border transition bg-gray-700 text-gray-300 border-gray-600";
+                btn.innerText = "Disattivato";
+                randomBtn.classList.add('hidden');
+                picker.classList.add('hidden');
+                badge.classList.add('hidden');
+                state.secretCode = null;
+            }
+            updateSecretCodeDisplay();
+        }
+
+        function generateRandomSecretCode() {
+            const perms = generateAllPermutations([...state.availableSymbols]);
+            const randomPerm = perms[Math.floor(Math.random() * perms.length)];
+            setSecretCode(randomPerm);
+        }
+
+        function setSecretCode(codeArray) {
+            state.secretCode = [...codeArray];
+            if (!state.secretCodeActive) {
+                toggleSecretCodeMode();
+            } else {
+                updateSecretCodeDisplay();
+            }
+            playSound('click');
+        }
+
+        function updateSecretCodeDisplay() {
+            const display = document.getElementById('currentSecretDisplay');
+            const banner = document.getElementById('targetCodeBanner');
+
+            if (state.secretCodeActive && state.secretCode) {
+                display.innerText = state.secretCode.join(' ');
+                banner.classList.remove('hidden');
+            } else {
+                display.innerText = "Nessuno";
+                banner.classList.add('hidden');
+            }
+            renderSecretPermutationsList();
+        }
+
+        function renderSecretPermutationsList() {
+            const listContainer = document.getElementById('secretPermutationsList');
+            if (!listContainer) return;
+            listContainer.innerHTML = '';
+
+            const perms = generateAllPermutations([...state.availableSymbols]);
+            perms.forEach(perm => {
+                const isCurrent = state.secretCode && state.secretCode.join(',') === perm.join(',');
+                const btn = document.createElement('button');
+                btn.className = `px-2.5 py-1 rounded-md text-xs font-bold border transition ${
+                    isCurrent 
+                        ? 'bg-yellow-500 text-gray-950 border-yellow-300 font-extrabold shadow' 
+                        : 'bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700'
+                }`;
+                btn.innerText = perm.join(' ');
+                btn.onclick = () => setSecretCode(perm);
+                listContainer.appendChild(btn);
+            });
+        }
+
+        // --- INITIALIZATION ---
+        window.onload = function() {
+            updateSymbolsFromPreset();
+            resetGame();
+        };
+
+        function updateSymbolsFromPreset() {
+            const list = PRESETS[state.elementType];
+            state.availableSymbols = list.slice(0, state.elementCount);
+            renderSymbolSelector();
+            if (state.secretCodeActive) {
+                generateRandomSecretCode();
+            }
+        }
+
+        function renderSymbolSelector() {
+            const container = document.getElementById('symbolsSelector');
+            container.innerHTML = '';
+            const fullList = PRESETS[state.elementType];
+
+            fullList.forEach(symbol => {
+                const isSelected = state.availableSymbols.includes(symbol);
+                const btn = document.createElement('button');
+                btn.className = `w-8 h-8 rounded-lg text-sm font-bold flex items-center justify-center border transition ${
+                    isSelected ? 'bg-purple-600 border-purple-300 text-white shadow' : 'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700'
+                }`;
+                btn.innerText = symbol;
+                btn.onclick = () => toggleSymbolSelection(symbol);
+                container.appendChild(btn);
+            });
+        }
+
+        function toggleSymbolSelection(symbol) {
+            if (state.availableSymbols.includes(symbol)) {
+                if (state.availableSymbols.length > state.elementCount) {
+                    state.availableSymbols = state.availableSymbols.filter(s => s !== symbol);
+                }
+            } else {
+                if (state.availableSymbols.length < state.elementCount) {
+                    state.availableSymbols.push(symbol);
+                } else {
+                    state.availableSymbols.shift();
+                    state.availableSymbols.push(symbol);
+                }
+            }
+            renderSymbolSelector();
+            if (state.secretCodeActive) {
+                generateRandomSecretCode();
+            }
+        }
+
+        function setGameMode(mode) {
+            state.gameMode = mode;
+            document.getElementById('mode1P').className = `py-2 px-3 rounded-lg text-xs font-bold border transition ${
+                mode === '1P' ? 'bg-cyan-600 text-white border-cyan-400' : 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600'
+            }`;
+            document.getElementById('mode2P').className = `py-2 px-3 rounded-lg text-xs font-bold border transition ${
+                mode === '2P' ? 'bg-cyan-600 text-white border-cyan-400' : 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600'
+            }`;
+        }
+
+        function setElementType(type) {
+            state.elementType = type;
+            document.getElementById('typeNumbers').className = `py-2 px-3 rounded-lg text-xs font-bold border transition ${
+                type === 'numbers' ? 'bg-pink-600 text-white border-pink-400' : 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600'
+            }`;
+            document.getElementById('typeEmoji').className = `py-2 px-3 rounded-lg text-xs font-bold border transition ${
+                type === 'emoji' ? 'bg-pink-600 text-white border-pink-400' : 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600'
+            }`;
+            updateSymbolsFromPreset();
+        }
+
+        function setElementCount(count) {
+            state.elementCount = count;
+            [2, 3, 4].forEach(c => {
+                const btn = document.getElementById(`count${c}`);
+                if (c === count) {
+                    btn.className = 'py-2 rounded-lg text-xs font-bold border transition bg-yellow-600 text-white border-yellow-400';
+                } else {
+                    btn.className = 'py-2 rounded-lg text-xs font-bold border transition bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600';
+                }
+            });
+            updateSymbolsFromPreset();
+        }
+
+        function toggleTeacherPanel() {
+            const panel = document.getElementById('teacherPanel');
+            panel.classList.toggle('hidden');
+            playSound('click');
+        }
+
+        function toggleAccordion() {
+            const content = document.getElementById('accordionContent');
+            const arrow = document.getElementById('accordionArrow');
+            content.classList.toggle('hidden');
+            arrow.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+            playSound('click');
+        }
+
+        function resetGame() {
+            const total = factorial(state.elementCount);
+            
+            state.p1.currentInput = [];
+            state.p1.foundCombinations = [];
+            state.p1.totalCombinations = total;
+
+            state.p2.currentInput = [];
+            state.p2.foundCombinations = [];
+            state.p2.totalCombinations = total;
+
+            const p2Container = document.getElementById('p2Container');
+            const p1Title = document.getElementById('p1Title');
+            
+            if (state.gameMode === '1P') {
+                p2Container.classList.add('hidden');
+                p1Title.innerText = 'GIOCATORE SINGOLO';
+            } else {
+                p2Container.classList.remove('hidden');
+                p1Title.innerText = 'GIOCATORE 1 / SQUADRA A';
+            }
+
+            document.getElementById('p1Count').innerText = '0';
+            document.getElementById('p1Total').innerText = total;
+            document.getElementById('p2Count').innerText = '0';
+            document.getElementById('p2Total').innerText = total;
+
+            document.getElementById('p1Message').innerText = '';
+            document.getElementById('p2Message').innerText = '';
+
+            renderKeypads();
+            renderInputSlots(1);
+            renderInputSlots(2);
+            renderGrids();
+            updateSecretCodeDisplay();
+            
+            playSound('click');
+        }
+
+        function renderKeypads() {
+            [1, 2].forEach(player => {
+                const keypad = document.getElementById(`p${player}Keypad`);
+                keypad.innerHTML = '';
+                
+                state.availableSymbols.forEach(symbol => {
+                    const btn = document.createElement('button');
+                    btn.className = `w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-2xl text-xl sm:text-2xl md:text-3xl font-black flex items-center justify-center border-2 transition btn-arcade ${
+                        player === 1 
+                            ? 'bg-cyan-950/80 border-cyan-400/60 text-cyan-200 hover:bg-cyan-800/80 glow-cyan' 
+                            : 'bg-pink-950/80 border-pink-400/60 text-pink-200 hover:bg-pink-800/80 glow-magenta'
+                    }`;
+                    btn.innerText = symbol;
+                    btn.onclick = () => addSymbolInput(player, symbol);
+                    keypad.appendChild(btn);
+                });
+            });
+        }
+
+        function renderInputSlots(player) {
+            const container = document.getElementById(`p${player}SlotContainer`);
+            container.innerHTML = '';
+            const playerState = state[player === 1 ? 'p1' : 'p2'];
+
+            for (let i = 0; i < state.elementCount; i++) {
+                const slot = document.createElement('div');
+                const symbol = playerState.currentInput[i];
+                
+                slot.className = `w-9 h-9 sm:w-11 sm:h-11 rounded-xl border-2 flex items-center justify-center text-lg sm:text-xl font-extrabold transition-all ${
+                    symbol 
+                        ? (player === 1 ? 'bg-cyan-600/40 border-cyan-400 text-cyan-100 scale-105' : 'bg-pink-600/40 border-pink-400 text-pink-100 scale-105') 
+                        : 'bg-gray-900 border-gray-700 text-gray-600'
+                }`;
+                slot.innerText = symbol || '•';
+                container.appendChild(slot);
+            }
+        }
+
+        function renderGrids() {
+            [1, 2].forEach(player => {
+                const grid = document.getElementById(`p${player}Grid`);
+                grid.innerHTML = '';
+                
+                let colsClass = 'grid-cols-2';
+                if (state.elementCount === 4) {
+                    colsClass = 'grid-cols-4';
+                }
+
+                grid.className = `grid ${colsClass} gap-2 max-h-[280px] overflow-y-auto pr-1`;
+
+                const playerState = state[player === 1 ? 'p1' : 'p2'];
+                const total = playerState.totalCombinations;
+
+                for (let i = 0; i < total; i++) {
+                    const card = document.createElement('div');
+                    const comb = playerState.foundCombinations[i];
+
+                    if (comb) {
+                        const isSecretMatch = state.secretCodeActive && state.secretCode && comb.join(',') === state.secretCode.join(',');
+                        card.className = `p-2 rounded-xl border text-center font-bold text-xs sm:text-sm tracking-wider animate-pulse-glow ${
+                            isSecretMatch
+                                ? 'bg-yellow-500/30 border-yellow-400 text-yellow-200 glow-yellow ring-2 ring-yellow-400'
+                                : (player === 1 
+                                    ? 'bg-cyan-950/60 border-cyan-500/80 text-cyan-200 glow-cyan' 
+                                    : 'bg-pink-950/60 border-pink-500/80 text-pink-200 glow-magenta')
+                        }`;
+                        card.innerText = (isSecretMatch ? '🎯 ' : '') + comb.join(' ');
+                    } else {
+                        card.className = 'p-2 rounded-xl border border-dashed border-gray-800 text-center font-mono text-gray-700 text-xs bg-gray-900/40';
+                        card.innerText = `[${i + 1}]`;
+                    }
+                    grid.appendChild(card);
+                }
+            });
+        }
+
+        function addSymbolInput(player, symbol) {
+            const playerState = state[player === 1 ? 'p1' : 'p2'];
+
+            if (playerState.currentInput.includes(symbol)) {
+                showMessage(player, '❌ Simbolo già usato in questa combinazione!', 'text-yellow-400');
+                playSound('error');
+                return;
+            }
+
+            if (playerState.currentInput.length < state.elementCount) {
+                playerState.currentInput.push(symbol);
+                renderInputSlots(player);
+                playSound('click');
+                showMessage(player, '', '');
+            }
+        }
+
+        function clearCurrentInput(player) {
+            const playerState = state[player === 1 ? 'p1' : 'p2'];
+            playerState.currentInput = [];
+            renderInputSlots(player);
+            showMessage(player, '', '');
+            playSound('click');
+        }
+
+        function showMessage(player, msg, colorClass) {
+            const msgBox = document.getElementById(`p${player}Message`);
+            msgBox.className = `mt-2 text-center text-xs font-bold h-5 transition-all ${colorClass}`;
+            msgBox.innerText = msg;
+        }
+
+        // --- SUBMIT COMBINATION & CHECK SECRET CODE ---
+        function submitCombination(player) {
+            const playerState = state[player === 1 ? 'p1' : 'p2'];
+            const container = document.getElementById(`p${player}Container`);
+
+            if (playerState.currentInput.length < state.elementCount) {
+                showMessage(player, `⚠️ Inserisci tutti e ${state.elementCount} gli elementi!`, 'text-yellow-400');
+                playSound('error');
+                container.classList.add('animate-shake');
+                setTimeout(() => container.classList.remove('animate-shake'), 400);
+                return;
+            }
+
+            const currentStr = playerState.currentInput.join(',');
+            const isDuplicate = playerState.foundCombinations.some(c => c.join(',') === currentStr);
+
+            if (isDuplicate) {
+                showMessage(player, '⚠️ Combinazione già trovata!', 'text-orange-400');
+                playSound('error');
+                container.classList.add('animate-shake');
+                setTimeout(() => container.classList.remove('animate-shake'), 400);
+                return;
+            }
+
+            // Valid Combination
+            playerState.foundCombinations.push([...playerState.currentInput]);
+            document.getElementById(`p${player}Count`).innerText = playerState.foundCombinations.length;
+            
+            // CHECK SECRET CODE MATCH
+            const isSecretMatch = state.secretCodeActive && state.secretCode && currentStr === state.secretCode.join(',');
+
+            if (isSecretMatch) {
+                playSound('win');
+                showMessage(player, '🎯 CODICE SEGRETO TROVATO!', 'text-yellow-300 font-black');
+                playerState.currentInput = [];
+                renderInputSlots(player);
+                renderGrids();
+                triggerWin(player, true);
+                return;
+            }
+
+            playSound('success');
+            showMessage(player, '✨ Ottimo! Combinazione valida!', player === 1 ? 'text-cyan-400' : 'text-pink-400');
+
+            playerState.currentInput = [];
+            renderInputSlots(player);
+            renderGrids();
+
+            // Check standard total completion victory
+            if (playerState.foundCombinations.length === playerState.totalCombinations) {
+                triggerWin(player, false);
+            }
+        }
+
+        function triggerWin(winnerPlayer, bySecretCode = false) {
+            playSound('win');
+            
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 150,
+                    spread: 90,
+                    origin: { y: 0.55 },
+                    colors: bySecretCode 
+                        ? ['#eab308', '#facc15', '#fef08a'] 
+                        : (winnerPlayer === 1 ? ['#06b6d4', '#3b82f6', '#67e8f9'] : ['#ec4899', '#f43f5e', '#f472b6'])
+                });
+            }
+
+            const modal = document.getElementById('winModal');
+            const title = document.getElementById('winTitle');
+            const desc = document.getElementById('winDescription');
+            const icon = document.getElementById('winIcon');
+
+            if (bySecretCode) {
+                icon.innerText = '🎯';
+                if (state.gameMode === '1P') {
+                    title.innerText = 'CODICE SEGRETO SBLOCCATO! 🔓';
+                    title.className = 'arcade-font text-base md:text-lg text-yellow-300 mb-2 text-glow-yellow';
+                    desc.innerText = `Bravissimo! Hai trovato esattamente il Codice Segreto (${state.secretCode.join(' ')})!`;
+                } else {
+                    const winnerName = winnerPlayer === 1 ? 'GIOCATORE 1 / SQUADRA A' : 'GIOCATORE 2 / SQUADRA B';
+                    title.innerText = `SBLOCCO SPECIALE! 🔓`;
+                    title.className = `arcade-font text-base md:text-lg mb-2 text-yellow-300 text-glow-yellow`;
+                    desc.innerText = `${winnerName} ha trovato per primo il Codice Segreto (${state.secretCode.join(' ')}) e vince la sfida!`;
+                }
+            } else {
+                icon.innerText = '🏆';
+                if (state.gameMode === '1P') {
+                    title.innerText = 'CAMPIONE ARCADE! 🎉';
+                    title.className = 'arcade-font text-lg md:text-xl text-yellow-300 mb-2 text-glow-yellow';
+                    desc.innerText = `Hai trovato tutte le ${state.p1.totalCombinations} permutazioni possibili!`;
+                } else {
+                    const winnerName = winnerPlayer === 1 ? 'GIOCATORE 1 / SQUADRA A' : 'GIOCATORE 2 / SQUADRA B';
+                    const colorClass = winnerPlayer === 1 ? 'text-cyan-300 text-glow-cyan' : 'text-pink-300 text-glow-magenta';
+                    
+                    title.innerText = `VITTORIA ${winnerPlayer === 1 ? 'SQUADRA A' : 'SQUADRA B'}! 🏆`;
+                    title.className = `arcade-font text-base md:text-lg mb-2 ${colorClass}`;
+                    desc.innerText = `Complimenti a ${winnerName} che ha trovato per primo tutte le ${state.p1.totalCombinations} combinazioni!`;
+                }
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeWinModal() {
+            const modal = document.getElementById('winModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    </script>
+</body>
+</html>
